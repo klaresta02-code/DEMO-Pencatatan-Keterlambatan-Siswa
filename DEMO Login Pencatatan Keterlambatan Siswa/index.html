@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo - Catatan Keterlambatan Siswa</title>
+<style>
+:root{--teks:#1f2a37;--redup:#5b6776;--garis:#d9dee5;--latar:#f4f6f8;--aksen:#1d5fa8;--aksen-gelap:#154a85;--bahaya:#a3262a}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--teks);background:var(--latar);line-height:1.5}
+h1{font-size:1.5rem;margin:0 0 1rem}h2{font-size:1.1rem;margin:1.5rem 0 .6rem}
+.demo{background:#fff6dd;border-bottom:1px solid #ecd9a0;padding:.5rem 1.5rem;font-size:.85rem;display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:space-between}
+.demo button{padding:.25rem .7rem;font-size:.8rem;background:#fff;color:var(--teks);border:1px solid #c9b46a}
+.demo button:hover{background:#fdf0c4}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;padding:.8rem 1.5rem;background:#fff;border-bottom:1px solid var(--garis)}
+.bar .user{color:var(--redup);font-size:.9rem}
+.bar a{margin-left:.8rem;color:var(--aksen);cursor:pointer;text-decoration:underline}
+.isi{max-width:960px;margin:0 auto;padding:1.5rem}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--garis)}
+th,td{padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--garis);font-size:.92rem}
+th{background:#eef1f5}
+.ringkas{display:flex;flex-wrap:wrap;gap:.75rem}
+.ringkas div{flex:1 1 140px;background:#fff;border:1px solid var(--garis);padding:.8rem 1rem;color:var(--redup)}
+.ringkas b{display:block;font-size:1.6rem;color:var(--teks)}
+.baris{display:flex;flex-wrap:wrap;gap:.6rem}
+input,select{padding:.55rem .7rem;border:1px solid var(--garis);border-radius:4px;font:inherit;background:#fff}
+button{padding:.6rem 1.1rem;border:0;border-radius:4px;background:var(--aksen);color:#fff;font:inherit;cursor:pointer}
+button:hover{background:var(--aksen-gelap)}
+:focus-visible{outline:2px solid var(--aksen);outline-offset:2px}
+.kosong{color:var(--redup)}
+.info{background:#e8f1fb;padding:.6rem .8rem;border-left:3px solid var(--aksen);color:var(--teks)}
+.kotak-login{width:100%;max-width:380px;margin:3rem auto;background:#fff;border:1px solid var(--garis);padding:2rem}
+.kotak-login .sub{color:var(--redup);margin:-.5rem 0 1.2rem}
+.kotak-login label{display:block;margin:.8rem 0 .25rem;font-size:.9rem}
+.kotak-login input{width:100%}.kotak-login button{width:100%;margin-top:1.2rem}
+.error{background:#fbeaea;color:var(--bahaya);padding:.6rem .8rem;border-left:3px solid var(--bahaya)}
+.akun{margin-top:1.2rem;font-size:.85rem;color:var(--redup)}
+.akun td,.akun th{font-size:.85rem;padding:.3rem .5rem}
+.tabel-geser{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="demo">
+  <span>Versi demo statis: data contoh tersimpan di browser Anda. Versi lengkap (PHP + MySQL) ada di repository.</span>
+  <button type="button" id="reset">Reset data demo</button>
+</div>
+<div id="app"></div>
+<script>
+const AKUN = {
+  admin: {password: 'admin123', nama: 'Administrator', role: 'admin'},
+  piket: {password: 'piket123', nama: 'Bu Sari', role: 'guru_piket'},
+  bk:    {password: 'bk123',    nama: 'Pak Budi', role: 'guru_bk'}
+};
+const HALAMAN = {admin: 'admin', guru_piket: 'piket', guru_bk: 'bk'};
+const SISWA = [
+  {nisn: '1234567890', nama: 'Andi',  kelas: 'X-1'},
+  {nisn: '1234567891', nama: 'Budi',  kelas: 'X-2'},
+  {nisn: '1234567892', nama: 'Citra', kelas: 'XI-1'},
+  {nisn: '1234567893', nama: 'Dewi',  kelas: 'XI-2'},
+  {nisn: '1234567894', nama: 'Eko',   kelas: 'XII-1'}
+];
+const SEED = [
+  {nisn: '1234567890', tanggal: '2026-11-03', jam: '07:12:00', alasan: 'Macet', guru: 'Bu Sari'},
+  {nisn: '1234567894', tanggal: '2026-11-03', jam: '07:20:00', alasan: 'Bangun kesiangan', guru: 'Bu Sari'},
+  {nisn: '1234567891', tanggal: '2026-11-04', jam: '07:05:00', alasan: 'Ban bocor', guru: 'Bu Sari'},
+  {nisn: '1234567890', tanggal: '2026-11-06', jam: '07:30:00', alasan: 'Hujan deras', guru: 'Bu Sari'},
+  {nisn: '1234567892', tanggal: '2026-11-09', jam: '07:10:00', alasan: 'Antar adik', guru: 'Bu Sari'},
+  {nisn: '1234567894', tanggal: '2026-11-10', jam: '07:25:00', alasan: 'Macet', guru: 'Bu Sari'},
+  {nisn: '1234567890', tanggal: '2026-11-12', jam: '07:18:00', alasan: 'Bangun kesiangan', guru: 'Bu Sari'},
+  {nisn: '1234567892', tanggal: '2026-11-13', jam: '07:08:00', alasan: 'Macet', guru: 'Bu Sari'},
+  {nisn: '1234567894', tanggal: '2026-11-16', jam: '07:15:00', alasan: 'Sakit perut', guru: 'Bu Sari'}
+];
+
+const app = document.getElementById('app');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const namaSiswa = n => SISWA.find(s => s.nisn === n) || {nama: '-', kelas: '-'};
+
+function muat() {
+  try {
+    const d = JSON.parse(localStorage.getItem('demo_terlambat'));
+    if (Array.isArray(d)) return d;
+  } catch (e) {}
+  return SEED.map(x => Object.assign({}, x));
+}
+function simpan() {
+  try { localStorage.setItem('demo_terlambat', JSON.stringify(data)); } catch (e) {}
+}
+let data = muat();
+
+function user() {
+  try { return JSON.parse(sessionStorage.getItem('demo_user')); } catch (e) { return null; }
+}
+function urut(arr) {
+  return arr.slice().sort((a, b) => (b.tanggal + b.jam).localeCompare(a.tanggal + a.jam));
+}
+function tabel(kepala, baris) {
+  return '<div class="tabel-geser"><table><tr>' + kepala.map(k => '<th>' + k + '</th>').join('') + '</tr>' +
+    baris.map(r => '<tr>' + r.map(c => '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</table></div>';
+}
+function bingkai(u, judul, isi) {
+  app.innerHTML =
+    '<header class="bar"><strong>Keterlambatan Siswa</strong><span class="user">' + esc(u.nama) + ' (' + esc(u.role.replace('_', ' ')) +
+    ') <a id="keluar" role="button" tabindex="0">Keluar</a></span></header><main class="isi"><h1>' + judul + '</h1>' + isi + '</main>';
+  document.getElementById('keluar').onclick = () => {
+    sessionStorage.removeItem('demo_user');
+    location.hash = 'login';
+    route();
+  };
+}
+
+function viewLogin(pesan) {
+  app.innerHTML =
+    '<main class="kotak-login"><h1>Catatan Keterlambatan Siswa</h1><p class="sub">Masuk dengan akun guru atau admin.</p>' +
+    (pesan ? '<p class="error" role="alert">' + esc(pesan) + '</p>' : '') +
+    '<form id="f"><label for="u">Username</label><input id="u" required autofocus autocomplete="username">' +
+    '<label for="p">Password</label><input id="p" type="password" required autocomplete="current-password">' +
+    '<button type="submit">Masuk</button></form>' +
+    '<table class="akun"><tr><th>Akun demo</th><th>Username</th><th>Password</th></tr>' +
+    '<tr><td>Admin</td><td>admin</td><td>admin123</td></tr>' +
+    '<tr><td>Guru piket</td><td>piket</td><td>piket123</td></tr>' +
+    '<tr><td>Guru BK</td><td>bk</td><td>bk123</td></tr></table></main>';
+  document.getElementById('f').onsubmit = ev => {
+    ev.preventDefault();
+    const nama = document.getElementById('u').value.trim();
+    const sandi = document.getElementById('p').value;
+    const a = AKUN[nama];
+    if (a && a.password === sandi) {
+      sessionStorage.setItem('demo_user', JSON.stringify({username: nama, nama: a.nama, role: a.role}));
+      location.hash = HALAMAN[a.role];
+      route();
+    } else {
+      viewLogin('Username atau password salah.');
+    }
+  };
+}
+
+function viewAdmin(u) {
+  const terbaru = urut(data).slice(0, 10).map(r => {
+    const s = namaSiswa(r.nisn);
+    return [r.tanggal, r.jam, s.nama, s.kelas, r.guru, r.alasan];
+  });
+  bingkai(u, 'Dashboard Admin',
+    '<div class="ringkas"><div><b>' + SISWA.length + '</b> siswa</div><div><b>1</b> guru piket</div><div><b>1</b> guru BK</div><div><b>' +
+    data.length + '</b> catatan terlambat</div></div><h2>10 keterlambatan terbaru</h2>' +
+    (terbaru.length ? tabel(['Tanggal', 'Jam', 'Siswa', 'Kelas', 'Dicatat oleh', 'Alasan'], terbaru) : '<p class="kosong">Belum ada data keterlambatan.</p>'));
+}
+
+function viewPiket(u, pesan) {
+  const riwayat = urut(data).slice(0, 15).map(r => {
+    const s = namaSiswa(r.nisn);
+    return [r.tanggal, r.jam, r.nisn, s.nama, s.kelas, r.alasan];
+  });
+  bingkai(u, 'Dashboard Guru Piket',
+    '<h2>Catat siswa terlambat</h2>' + (pesan ? '<p class="info">' + esc(pesan) + '</p>' : '') +
+    '<form id="fp" class="baris"><select id="nisn" required>' +
+    SISWA.map(s => '<option value="' + s.nisn + '">' + esc(s.nisn + ' - ' + s.nama + ' (' + s.kelas + ')') + '</option>').join('') +
+    '</select><input id="alasan" maxlength="50" placeholder="Alasan (opsional)"><button type="submit">Simpan</button></form>' +
+    '<h2>Catatan Anda</h2>' +
+    (riwayat.length ? tabel(['Tanggal', 'Jam', 'NISN', 'Nama', 'Kelas', 'Alasan'], riwayat) : '<p class="kosong">Belum ada catatan. Isi form di atas untuk mencatat siswa terlambat.</p>'));
+  document.getElementById('fp').onsubmit = ev => {
+    ev.preventDefault();
+    const now = new Date();
+    const dua = n => String(n).padStart(2, '0');
+    data.push({
+      nisn: document.getElementById('nisn').value,
+      tanggal: now.getFullYear() + '-' + dua(now.getMonth() + 1) + '-' + dua(now.getDate()),
+      jam: dua(now.getHours()) + ':' + dua(now.getMinutes()) + ':' + dua(now.getSeconds()),
+      alasan: document.getElementById('alasan').value.trim(),
+      guru: u.nama
+    });
+    simpan();
+    viewPiket(u, 'Keterlambatan berhasil dicatat.');
+  };
+}
+
+function viewBk(u) {
+  const hitung = {};
+  data.forEach(r => {
+    const h = hitung[r.nisn] || (hitung[r.nisn] = {total: 0, terakhir: ''});
+    h.total++;
+    if (r.tanggal > h.terakhir) h.terakhir = r.tanggal;
+  });
+  const rawan = Object.keys(hitung).filter(n => hitung[n].total >= 3)
+    .sort((a, b) => hitung[b].total - hitung[a].total)
+    .map(n => [n, namaSiswa(n).nama, namaSiswa(n).kelas, hitung[n].total, hitung[n].terakhir]);
+  bingkai(u, 'Dashboard Guru BK',
+    '<h2>Siswa dengan 3 keterlambatan atau lebih</h2>' +
+    (rawan.length ? tabel(['NISN', 'Nama', 'Kelas', 'Total terlambat', 'Terakhir'], rawan) : '<p class="kosong">Belum ada siswa yang terlambat 3 kali atau lebih.</p>'));
+}
+
+function viewDitolak(u) {
+  bingkai(u, 'Akses ditolak',
+    '<p>Role Anda tidak boleh membuka halaman ini.</p><p><a href="#' + HALAMAN[u.role] + '">Kembali ke dashboard Anda</a></p>');
+}
+
+function route() {
+  const u = user();
+  const h = (location.hash || '#login').slice(1);
+  if (!u) {
+    if (h !== 'login') { location.hash = 'login'; return; }
+    return viewLogin();
+  }
+  if (!['admin', 'piket', 'bk'].includes(h)) { location.hash = HALAMAN[u.role]; return; }
+  if (HALAMAN[u.role] !== h) return viewDitolak(u);
+  if (h === 'admin') viewAdmin(u);
+  else if (h === 'piket') viewPiket(u);
+  else viewBk(u);
+}
+
+document.getElementById('reset').onclick = () => {
+  data = SEED.map(x => Object.assign({}, x));
+  simpan();
+  route();
+};
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
